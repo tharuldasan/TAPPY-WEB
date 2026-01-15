@@ -6,159 +6,129 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+/* MATCHING YOUR ESP32 STYLE */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: radial-gradient(circle at top, #1b2735, #090a0f);
-  color: #fff;
+  background: linear-gradient(135deg, #5f6fd6, #7b6fd6);
 }
 
-.container {
-  padding: 20px;
-  text-align: center;
-}
-
-h1 {
-  margin: 10px 0;
+/* DASHBOARD */
+#dashboard {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card {
-  background: rgba(255,255,255,0.06);
-  backdrop-filter: blur(10px);
-  border-radius: 14px;
-  padding: 20px;
-  margin: 20px auto;
-  max-width: 420px;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 30px;
+  width: 90%;
+  max-width: 460px;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+  text-align: center;
+}
+
+.card h1 {
+  color: #5f6fd6;
+  margin-bottom: 20px;
+}
+
+.instructions {
+  text-align: left;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 button {
-  background: linear-gradient(135deg, #00e5ff, #00bcd4);
-  border: none;
-  border-radius: 12px;
-  padding: 14px 24px;
+  margin-top: 20px;
+  width: 100%;
+  padding: 14px;
   font-size: 16px;
+  border-radius: 12px;
+  border: none;
+  background: #5f6fd6;
+  color: #fff;
   cursor: pointer;
-  color: #000;
-  margin-top: 15px;
 }
 
 button:hover {
   opacity: 0.9;
 }
 
-.instructions {
-  text-align: left;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-/* Settings */
-.settings {
-  text-align: left;
-  font-size: 14px;
-  margin-top: 10px;
-}
-
-.settings select {
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  margin-top: 6px;
-}
-
-/* iframe */
+/* IFRAME */
 #tappyFrame {
   display: none;
-  width: 100%;
+  width: 100vw;
   height: 100vh;
   border: none;
 }
 
-/* Popup */
-.popup {
+/* POPUP */
+#popup {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.5);
   align-items: center;
   justify-content: center;
-  z-index: 10;
 }
 
 .popup-box {
-  background: #111827;
-  border-radius: 14px;
-  padding: 22px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 25px;
   width: 90%;
   max-width: 360px;
   text-align: center;
 }
 
 .popup-box h3 {
+  color: #5f6fd6;
   margin-top: 0;
 }
 
+.popup-box p {
+  color: #333;
+  font-size: 14px;
+}
+
 .popup-box button {
-  margin-top: 15px;
+  background: #5f6fd6;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container" id="dashboard">
-  <h1>🧠 Tappy Configuration Room</h1>
-
+<!-- DASHBOARD -->
+<div id="dashboard">
   <div class="card">
-    <h3>Connect Your Tappy</h3>
+    <h1>🎵 TAPPY Configuration Room</h1>
 
     <div class="instructions">
       1. Power ON Tappy<br>
       2. Open Wi-Fi settings<br>
       3. Connect to <b>TAPPY_CR</b><br>
-      4. Return here and press Connect
+      4. Come back and press Connect
     </div>
 
     <button onclick="connectTappy()">Connect Tappy</button>
   </div>
-
-  <div class="card">
-    <h3>Quick Preferences</h3>
-
-    <div class="settings">
-      Personality
-      <select>
-        <option>Friendly</option>
-        <option>Serious</option>
-        <option>Funny</option>
-      </select>
-
-      Voice
-      <select>
-        <option>Default</option>
-        <option>Male</option>
-        <option>Female</option>
-      </select>
-
-      Language
-      <select>
-        <option>English</option>
-        <option>Sinhala</option>
-        <option>Tamil</option>
-      </select>
-    </div>
-  </div>
 </div>
 
+<!-- ESP32 WEB -->
 <iframe id="tappyFrame"></iframe>
 
-<!-- Popup -->
-<div class="popup" id="popup">
+<!-- POPUP -->
+<div id="popup">
   <div class="popup-box">
-    <h3>⚠️ Connection Required</h3>
+    <h3>Connection Error</h3>
     <p id="popupText"></p>
-    <button onclick="closePopup()">Back</button>
+    <button onclick="goBack()">Go Back</button>
   </div>
 </div>
 
@@ -167,18 +137,16 @@ const TAPPY_URL = "http://192.168.4.1";
 let loaded = false;
 
 function connectTappy() {
-  loaded = false;
-
   fetch(TAPPY_URL, { mode: "no-cors" })
     .then(() => loadTappy())
     .catch(() => showPopup(
-      "Please connect to <b>TAPPY_CR</b> Wi-Fi and try again."
+      "Please connect to the Wi-Fi network <b>TAPPY_CR</b>."
     ));
 
   setTimeout(() => {
     if (!loaded) {
       showPopup(
-        "Tappy not detected.<br>Reconnect to <b>TAPPY_CR</b>."
+        "Tappy not detected.<br>Please reconnect to <b>TAPPY_CR</b>."
       );
     }
   }, 4000);
@@ -190,13 +158,7 @@ function loadTappy() {
   frame.style.display = "block";
   frame.src = TAPPY_URL;
 
-  setTimeout(() => {
-    try {
-      loaded = true;
-    } catch {
-      reset();
-    }
-  }, 2000);
+  setTimeout(() => loaded = true, 1500);
 
   setTimeout(() => {
     if (!loaded) reset();
@@ -206,9 +168,9 @@ function loadTappy() {
 function reset() {
   document.getElementById("tappyFrame").src = "";
   document.getElementById("tappyFrame").style.display = "none";
-  document.getElementById("dashboard").style.display = "block";
+  document.getElementById("dashboard").style.display = "flex";
   showPopup(
-    "Wrong Wi-Fi or connection lost.<br>Please reconnect to <b>TAPPY_CR</b>."
+    "Wrong Wi-Fi or connection lost.<br>Please connect to <b>TAPPY_CR</b> again."
   );
 }
 
@@ -217,7 +179,7 @@ function showPopup(msg) {
   document.getElementById("popup").style.display = "flex";
 }
 
-function closePopup() {
+function goBack() {
   document.getElementById("popup").style.display = "none";
 }
 </script>
