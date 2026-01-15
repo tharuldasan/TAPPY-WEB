@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tappy Configuration Room</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: radial-gradient(circle at top, #1b2735, #090a0f);
+  color: #fff;
+}
+
+.container {
+  padding: 20px;
+  text-align: center;
+}
+
+h1 {
+  margin: 10px 0;
+}
+
+.card {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 420px;
+}
+
+button {
+  background: linear-gradient(135deg, #00e5ff, #00bcd4);
+  border: none;
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-size: 16px;
+  cursor: pointer;
+  color: #000;
+  margin-top: 15px;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.instructions {
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Settings */
+.settings {
+  text-align: left;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.settings select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  margin-top: 6px;
+}
+
+/* iframe */
+#tappyFrame {
+  display: none;
+  width: 100%;
+  height: 100vh;
+  border: none;
+}
+
+/* Popup */
+.popup {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.popup-box {
+  background: #111827;
+  border-radius: 14px;
+  padding: 22px;
+  width: 90%;
+  max-width: 360px;
+  text-align: center;
+}
+
+.popup-box h3 {
+  margin-top: 0;
+}
+
+.popup-box button {
+  margin-top: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="dashboard">
+  <h1>🧠 Tappy Configuration Room</h1>
+
+  <div class="card">
+    <h3>Connect Your Tappy</h3>
+
+    <div class="instructions">
+      1. Power ON Tappy<br>
+      2. Open Wi-Fi settings<br>
+      3. Connect to <b>TAPPY_CR</b><br>
+      4. Return here and press Connect
+    </div>
+
+    <button onclick="connectTappy()">Connect Tappy</button>
+  </div>
+
+  <div class="card">
+    <h3>Quick Preferences</h3>
+
+    <div class="settings">
+      Personality
+      <select>
+        <option>Friendly</option>
+        <option>Serious</option>
+        <option>Funny</option>
+      </select>
+
+      Voice
+      <select>
+        <option>Default</option>
+        <option>Male</option>
+        <option>Female</option>
+      </select>
+
+      Language
+      <select>
+        <option>English</option>
+        <option>Sinhala</option>
+        <option>Tamil</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<iframe id="tappyFrame"></iframe>
+
+<!-- Popup -->
+<div class="popup" id="popup">
+  <div class="popup-box">
+    <h3>⚠️ Connection Required</h3>
+    <p id="popupText"></p>
+    <button onclick="closePopup()">Back</button>
+  </div>
+</div>
+
+<script>
+const TAPPY_URL = "http://192.168.4.1";
+let loaded = false;
+
+function connectTappy() {
+  loaded = false;
+
+  fetch(TAPPY_URL, { mode: "no-cors" })
+    .then(() => loadTappy())
+    .catch(() => showPopup(
+      "Please connect to <b>TAPPY_CR</b> Wi-Fi and try again."
+    ));
+
+  setTimeout(() => {
+    if (!loaded) {
+      showPopup(
+        "Tappy not detected.<br>Reconnect to <b>TAPPY_CR</b>."
+      );
+    }
+  }, 4000);
+}
+
+function loadTappy() {
+  document.getElementById("dashboard").style.display = "none";
+  const frame = document.getElementById("tappyFrame");
+  frame.style.display = "block";
+  frame.src = TAPPY_URL;
+
+  setTimeout(() => {
+    try {
+      loaded = true;
+    } catch {
+      reset();
+    }
+  }, 2000);
+
+  setTimeout(() => {
+    if (!loaded) reset();
+  }, 6000);
+}
+
+function reset() {
+  document.getElementById("tappyFrame").src = "";
+  document.getElementById("tappyFrame").style.display = "none";
+  document.getElementById("dashboard").style.display = "block";
+  showPopup(
+    "Wrong Wi-Fi or connection lost.<br>Please reconnect to <b>TAPPY_CR</b>."
+  );
+}
+
+function showPopup(msg) {
+  document.getElementById("popupText").innerHTML = msg;
+  document.getElementById("popup").style.display = "flex";
+}
+
+function closePopup() {
+  document.getElementById("popup").style.display = "none";
+}
+</script>
+
+</body>
+</html>
